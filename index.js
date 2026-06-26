@@ -109,4 +109,8 @@ app.get('/', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+const path = require('path');
+app.get('/dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'piccolo-morso-dashboard_3.html'));
+});
 app.listen(PORT, () => console.log(`Piccolo Morso backend running on port ${PORT}`));
