@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Piccolo Morso — Owner Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{--cream:#F7F3EE;--espresso:#1C1208;--caramel:#B85C38;--caramel-light:#F5D9CD;--gold:#C9933A;--gold-light:#FAF0DC;--sage:#4A6741;--sage-light:#DFF0DB;--dust:#8A7E74;--border:rgba(28,18,8,0.1);--border-strong:rgba(28,18,8,0.2);--white:#fff;--danger:#C0392B;--danger-light:#FDECEA;--shadow:0 1px 3px rgba(28,18,8,0.08),0 4px 12px rgba(28,18,8,0.04);}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:15px;}
+body{background:var(--cream);color:var(--espresso);font-family:'DM Sans',sans-serif;min-height:100vh;}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:225px;background:var(--espresso);display:flex;flex-direction:column;z-index:100;overflow-y:auto;}
+.sidebar-brand{padding:24px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.brand-name{font-family:'DM Serif Display',serif;font-size:19px;color:#fff;line-height:1.1;}
+.brand-sub{font-size:10px;color:var(--dust);letter-spacing:.12em;text-transform:uppercase;margin-top:4px;}
+.sidebar-date{padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.sidebar-date .day{font-size:10px;color:var(--dust);text-transform:uppercase;letter-spacing:.08em;}
+.sidebar-date .dval{font-size:13px;color:#fff;margin-top:2px;font-weight:500;}
+.nav-section{padding:12px 0 4px;}
+.nav-label{font-size:9px;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:.1em;padding:0 20px 6px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 20px;cursor:pointer;color:rgba(255,255,255,0.5);font-size:12px;transition:all .15s;border-left:2px solid transparent;}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,0.05);}
+.nav-item.active{color:#fff;background:rgba(184,92,56,0.2);border-left-color:var(--caramel);}
+.nav-item i{width:15px;text-align:center;font-size:12px;}
+.nav-badge{background:var(--danger);color:#fff;font-size:9px;padding:1px 5px;border-radius:8px;margin-left:auto;}
+.sidebar-bottom{margin-top:auto;padding:14px 20px;border-top:1px solid rgba(255,255,255,0.08);}
+.sync-status{display:flex;align-items:center;gap:7px;font-size:10px;color:var(--dust);}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.main{margin-left:225px;min-height:100vh;}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar-title{font-family:'DM Serif Display',serif;font-size:17px;}
+.topbar-actions{display:flex;align-items:center;gap:8px;}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:none;transition:all .15s;font-family:'DM Sans',sans-serif;}
+.btn-primary{background:var(--caramel);color:#fff;}.btn-primary:hover{background:#a34e2f;}
+.btn-ghost{background:transparent;color:var(--dust);border:1px solid var(--border-strong);}.btn-ghost:hover{background:var(--cream);color:var(--espresso);}
+.btn-sm{padding:5px 10px;font-size:11px;}
+.btn-danger{background:var(--danger-light);color:var(--danger);border:1px solid rgba(192,57,43,0.2);}
+.btn-sage{background:var(--sage-light);color:var(--sage);border:1px solid rgba(74,103,65,0.2);}
+.content{padding:20px 24px;}
+.panel{display:none;}.panel.active{display:block;}
+/* ALERTS */
+.alert-item{display:flex;align-items:flex-start;gap:9px;padding:9px 13px;border-radius:9px;margin-bottom:5px;font-size:12px;}
+.alert-item.danger{background:var(--danger-light);color:var(--danger);border:1px solid rgba(192,57,43,0.15);}
+.alert-item.warn{background:var(--gold-light);color:#7a5a1e;border:1px solid rgba(201,147,58,0.2);}
+.alert-item.good{background:var(--sage-light);color:var(--sage);border:1px solid rgba(74,103,65,0.2);}
+.alert-item i{margin-top:1px;flex-shrink:0;}
+.alert-msg{font-weight:500;}.alert-sub{font-size:10px;opacity:.75;margin-top:1px;}
+/* METRICS */
+.metrics-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px;}
+.mc{background:#fff;border-radius:11px;padding:14px 16px;box-shadow:var(--shadow);border:1px solid var(--border);}
+.mc.dark{background:var(--espresso);}
+.mc-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--dust);margin-bottom:7px;}
+.mc.dark .mc-label{color:rgba(255,255,255,0.4);}
+.mc-val{font-size:22px;font-weight:600;color:var(--espresso);line-height:1;}
+.mc.dark .mc-val{color:#fff;font-size:24px;}
+.mc-sub{font-size:10px;color:var(--dust);margin-top:4px;}
+.mc.dark .mc-sub{color:rgba(255,255,255,0.35);}
+.mc.good .mc-val{color:var(--sage);}
+.mc.warn .mc-val{color:var(--gold);}
+.mc.danger .mc-val{color:var(--danger);}
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.g65{display:grid;grid-template-columns:1.8fr 1fr;gap:14px;margin-bottom:14px;}
+/* CARD */
+.card{background:#fff;border-radius:11px;box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;margin-bottom:14px;}
+.card-hdr{padding:14px 16px 0;display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--dust);display:flex;align-items:center;gap:5px;}
+.card-body{padding:12px 16px 14px;}
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.tbl th{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--dust);padding:7px 10px;border-bottom:1px solid var(--border);text-align:left;}
+.tbl td{padding:9px 10px;border-bottom:1px solid var(--border);color:var(--espresso);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:var(--cream);}
+/* PILLS */
+.pill{font-size:9px;font-weight:600;padding:2px 7px;border-radius:7px;white-space:nowrap;}
+.pill-red{background:var(--danger-light);color:var(--danger);}
+.pill-orange{background:var(--gold-light);color:#7a5a1e;}
+.pill-green{background:var(--sage-light);color:var(--sage);}
+.pill-blue{background:#EEF0FB;color:#2b4bdb;}
+.pill-gray{background:#F3F3F3;color:#666;}
+.pill-purple{background:#F0EEFF;color:#5a3fc0;}
+/* SOURCE BADGES */
+.src{font-size:8px;font-weight:700;padding:2px 6px;border-radius:5px;text-transform:uppercase;letter-spacing:.06em;}
+.src-bustl{background:#E8F4FD;color:#1a73c8;}
+.src-shopify{background:#E6F6EC;color:#1a7a3c;}
+.src-xero{background:#EEF0FB;color:#2b4bdb;}
+.src-ipay{background:#FFF3E0;color:#b85c00;}
+.src-manual{background:#F3F3F3;color:#666;}
+/* DIVROW */
+.dr{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.dr:last-child{border-bottom:none;}
+.dr-l{color:var(--dust);}
+.dr-v{font-weight:500;}
+.dr-v.pos{color:var(--sage);}
+.dr-v.neg{color:var(--danger);}
+/* FORM */
+.fg{display:flex;flex-direction:column;gap:4px;}
+.fg label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--dust);}
+.fg input,.fg select,.fg textarea{padding:7px 9px;border:1px solid var(--border-strong);border-radius:7px;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--espresso);background:var(--cream);}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--caramel);background:#fff;}
+.fgrid{display:grid;gap:10px;}
+/* PROGRESS */
+.prog-track{height:5px;background:var(--cream);border-radius:3px;overflow:hidden;margin-top:6px;}
+.prog-fill{height:100%;border-radius:3px;background:var(--caramel);transition:width .5s;}
+.prog-fill.green{background:var(--sage);}
+.prog-fill.red{background:var(--danger);}
+/* STAFF */
+.staff-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;}
+.staff-card{background:#fff;border:1px solid var(--border);border-radius:11px;padding:13px;box-shadow:var(--shadow);}
+.staff-card.in{border-color:rgba(74,103,65,0.4);background:#F8FCF7;}
+.cdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.cdot.in{background:var(--sage);}
+.cdot.out{background:#ccc;}
+.clk-btn{width:100%;padding:6px;border-radius:7px;font-size:11px;font-weight:600;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.clk-btn.btn-in{background:var(--sage-light);color:var(--sage);}
+.clk-btn.btn-out{background:var(--danger-light);color:var(--danger);}
+/* INV BAR */
+.ibar{height:4px;border-radius:2px;background:var(--cream);width:70px;display:inline-block;vertical-align:middle;overflow:hidden;}
+.ifill{height:100%;border-radius:2px;}
+/* GST BOX */
+.gst-box{background:var(--espresso);border-radius:11px;padding:16px;color:#fff;margin-bottom:14px;}
+.gst-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.1);font-size:12px;}
+.gst-row:last-child{border-bottom:none;font-weight:600;font-size:14px;}
+.gst-row .gn{color:rgba(255,255,255,0.5);}
+.gst-row .gv{color:#fff;}
+/* CHART */
+.chart-wrap{position:relative;width:100%;}
+.h140{height:140px;}.h160{height:160px;}.h180{height:180px;}.h200{height:200px;}
+/* RECIPE MODULE */
+.recipe-card{background:#fff;border:1px solid var(--border);border-radius:11px;box-shadow:var(--shadow);padding:14px;margin-bottom:10px;}
+.recipe-name{font-weight:600;font-size:14px;color:var(--espresso);margin-bottom:2px;}
+.recipe-meta{font-size:11px;color:var(--dust);margin-bottom:10px;}
+.recipe-ing{font-size:11px;color:var(--dust);margin-bottom:8px;line-height:1.6;}
+.recipe-stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-top:8px;}
+.rstat{background:var(--cream);border-radius:7px;padding:7px 9px;text-align:center;}
+.rstat-label{font-size:9px;color:var(--dust);font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
+.rstat-val{font-size:14px;font-weight:600;color:var(--espresso);margin-top:2px;}
+.rstat-val.good{color:var(--sage);}
+.rstat-val.warn{color:var(--gold);}
+.rstat-val.danger{color:var(--danger);}
+/* PREP */
+.prep-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.prep-row:last-child{border-bottom:none;}
+.prep-name{font-weight:500;flex:1;}
+.prep-qty input{width:65px;padding:5px 7px;border:1px solid var(--border-strong);border-radius:6px;font-size:12px;text-align:center;font-family:'DM Sans',sans-serif;}
+.prep-cost{min-width:60px;text-align:right;font-weight:500;color:var(--espresso);}
+.prep-need{font-size:10px;color:var(--dust);flex:1;}
+/* WASTE */
+.waste-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.waste-row:last-child{border-bottom:none;}
+.waste-item{flex:1;font-weight:500;}
+.waste-qty{font-size:11px;color:var(--dust);}
+.waste-cost{font-weight:600;color:var(--danger);}
+/* GUIDE */
+.guide-step{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--border);}
+.guide-step:last-child{border-bottom:none;}
+.step-num{width:26px;height:26px;border-radius:50%;background:var(--caramel);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-title{font-weight:600;font-size:12px;margin-bottom:3px;}
+.step-desc{font-size:11px;color:var(--dust);line-height:1.5;}
+.int-card{border:1px solid var(--border);border-radius:9px;padding:12px;margin-bottom:9px;}
+.int-hdr{display:flex;align-items:center;gap:9px;margin-bottom:7px;}
+.int-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.int-name{font-weight:600;font-size:12px;}
+.int-status{font-size:10px;margin-left:auto;padding:2px 7px;border-radius:5px;font-weight:600;}
+.int-pending{background:var(--gold-light);color:#7a5a1e;}
+.int-connected{background:var(--sage-light);color:var(--sage);}
+.int-desc{font-size:11px;color:var(--dust);line-height:1.5;}
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.section-hdr h2{font-size:13px;font-weight:600;}
+/* RESPONSIVE */
+@media(max-width:900px){.sidebar{width:56px;}.sidebar .brand-name,.sidebar .brand-sub,.sidebar .dval,.sidebar .day,.nav-item span,.nav-label,.sidebar-bottom .sync-status span,.nav-badge{display:none;}.main{margin-left:56px;}.nav-item{padding:11px;justify-content:center;}.nav-item i{width:auto;font-size:15px;}.g2,.g65{grid-template-columns:1fr;}.g3{grid-template-columns:1fr 1fr;}.content{padding:14px;}}
+@media(max-width:600px){.g3{grid-template-columns:1fr;}.metrics-row{grid-template-columns:1fr 1fr;}.recipe-stats{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-brand"><div class="brand-name">Piccolo<br>Morso</div><div class="brand-sub">Owner Dashboard</div></div>
+  <div class="sidebar-date"><div class="day" id="sideDay"></div><div class="dval" id="sideDate"></div></div>
+  <nav>
+    <div class="nav-section">
+      <div class="nav-label">Daily</div>
+      <div class="nav-item active" onclick="go('overview',this)"><i class="fa-solid fa-gauge-high"></i><span>Overview</span></div>
+      <div class="nav-item" onclick="go('alerts',this)"><i class="fa-solid fa-bell"></i><span>Smart Alerts</span><div class="nav-badge" id="alertBadge" style="display:none"></div></div>
+      <div class="nav-item" onclick="go('entry',this)"><i class="fa-solid fa-pen-to-square"></i><span>Enter Figures</span></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Kitchen</div>
+      <div class="nav-item" onclick="go('recipes',this)"><i class="fa-solid fa-book-open"></i><span>Recipe Costing</span></div>
+      <div class="nav-item" onclick="go('prep',this)"><i class="fa-solid fa-list-check"></i><span>Daily Prep</span></div>
+      <div class="nav-item" onclick="go('waste',this)"><i class="fa-solid fa-trash-can"></i><span>Waste Tracker</span></div>
+      <div class="nav-item" onclick="go('inventory',this)"><i class="fa-solid fa-boxes-stacked"></i><span>Inventory</span></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Operations</div>
+      <div class="nav-item" onclick="go('purchases',this)"><i class="fa-solid fa-truck"></i><span>Purchases</span></div>
+      <div class="nav-item" onclick="go('staff',this)"><i class="fa-solid fa-clock"></i><span>Staff Hours</span></div>
+      <div class="nav-item" onclick="go('payroll',this)"><i class="fa-solid fa-money-bill-wave"></i><span>Payroll</span></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Finance</div>
+      <div class="nav-item" onclick="go('gst',this)"><i class="fa-solid fa-receipt"></i><span>GST & Tax</span></div>
+      <div class="nav-item" onclick="go('bills',this)"><i class="fa-solid fa-file-invoice-dollar"></i><span>Bills & Invoices</span></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Setup</div>
+      <div class="nav-item" onclick="go('integrations',this)"><i class="fa-solid fa-plug"></i><span>Integrations</span></div>
+    </div>
+  </nav>
+  <div class="sidebar-bottom"><div class="sync-status"><div class="sync-dot" id="syncDot"></div><span>Saved locally</span></div></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="panelTitle">Today's Overview</div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost btn-sm" onclick="go('entry',null)"><i class="fa-solid fa-pen"></i> Update figures</button>
+      <button class="btn btn-primary btn-sm" onclick="saveAll()"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+    </div>
+  </div>
+  <div class="content">
+
+  <!-- ══════════ OVERVIEW ══════════ -->
+  <div id="panel-overview" class="panel active">
+    <div id="ov-alerts" class="alert-strip" style="margin-bottom:14px;"></div>
+    <div class="metrics-row">
+      <div class="mc dark"><div class="mc-label">Total Revenue</div><div class="mc-val" id="ov-rev">$0</div><div class="mc-sub">Bustl + Shopify</div></div>
+      <div class="mc" id="ov-profitCard"><div class="mc-label">Est. Net Profit</div><div class="mc-val" id="ov-profit">$0</div><div class="mc-sub" id="ov-profitPct">0% margin</div></div>
+      <div class="mc"><div class="mc-label">Bustl POS</div><div class="mc-val" id="ov-bustl">$0</div><div class="mc-sub" id="ov-bustlOrd">— orders</div></div>
+      <div class="mc"><div class="mc-label">Shopify Online</div><div class="mc-val" id="ov-shopify">$0</div><div class="mc-sub" id="ov-shopifyOrd">— orders</div></div>
+      <div class="mc" id="ov-labCard"><div class="mc-label">Labour Cost</div><div class="mc-val" id="ov-labour">$0</div><div class="mc-sub" id="ov-labPct">0% of revenue</div></div>
+      <div class="mc" id="ov-cogCard"><div class="mc-label">Food Cost</div><div class="mc-val" id="ov-cogs">$0</div><div class="mc-sub" id="ov-cogPct">0% of revenue</div></div>
+      <div class="mc" id="ov-wasteCard"><div class="mc-label">Waste Today</div><div class="mc-val" id="ov-waste">$0</div><div class="mc-sub" id="ov-wastePct">0% of revenue</div></div>
+    </div>
+    <div class="g65">
+      <div class="card">
+        <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-chart-bar"></i> Weekly revenue — Bustl vs Shopify</div></div>
+        <div class="card-body">
+          <div style="display:flex;gap:14px;margin-bottom:8px;font-size:10px;color:var(--dust);">
+            <span style="display:flex;align-items:center;gap:4px;"><span style="width:9px;height:9px;border-radius:2px;background:#B85C38;display:inline-block;"></span>Bustl POS</span>
+            <span style="display:flex;align-items:center;gap:4px;"><span style="width:9px;height:9px;border-radius:2px;background:#4A6741;display:inline-block;"></span>Shopify</span>
+          </div>
+          <div class="chart-wrap h180"><canvas id="weekChart" role="img" aria-label="Weekly revenue by channel">Weekly channel revenue.</canvas></div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-building-columns"></i> Cash position <span class="src src-xero">Xero</span></div></div>
+          <div class="card-body">
+            <div class="dr"><span class="dr-l">Bank balance</span><span class="dr-v" id="ov-bank">$0</span></div>
+            <div class="dr"><span class="dr-l">GST payable (est.)</span><span class="dr-v neg" id="ov-gst">$0</span></div>
+            <div class="dr"><span class="dr-l">Waste cost today</span><span class="dr-v neg" id="ov-wasteD">$0</span></div>
+            <div class="dr" style="font-weight:600;"><span class="dr-l">Net cash position</span><span class="dr-v pos" id="ov-netcash">$0</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-file-invoice"></i> Bills due soon</div></div>
+          <div class="card-body" id="ov-bills" style="padding-top:6px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="g3">
+      <div class="card">
+        <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-chart-pie"></i> Cost breakdown</div></div>
+        <div class="card-body"><div class="chart-wrap h140"><canvas id="costChart" role="img" aria-label="Cost doughnut">Cost split.</canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-users"></i> Staff on now</div></div>
+        <div class="card-body">
+          <div id="ov-staff"></div>
+          <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+            <div class="dr" style="padding:4px 0;"><span class="dr-l">Total hrs</span><span class="dr-v" id="ov-hrs">0h</span></div>
+            <div class="dr" style="padding:4px 0;border-bottom:none;"><span class="dr-l">Est. labour</span><span class="dr-v" id="ov-estLab">$0</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-triangle-exclamation"></i> Stock alerts</div></div>
+        <div class="card-body" id="ov-stock" style="padding-top:6px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ ALERTS ══════════ -->
+  <div id="panel-alerts" class="panel">
+    <div id="allAlerts" style="margin-bottom:14px;"></div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-sliders"></i> Alert thresholds</div></div>
+      <div class="card-body">
+        <div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));">
+          <div class="fg"><label>Labour % warning</label><input type="number" id="thr-lab" value="30"></div>
+          <div class="fg"><label>COGS % warning</label><input type="number" id="thr-cog" value="32"></div>
+          <div class="fg"><label>Waste % warning</label><input type="number" id="thr-waste" value="5"></div>
+          <div class="fg"><label>Daily sales floor ($)</label><input type="number" id="thr-sales" value="2800"></div>
+          <div class="fg"><label>Bill due alert (days)</label><input type="number" id="thr-inv" value="3"></div>
+        </div>
+        <div style="margin-top:10px;"><button class="btn btn-primary" onclick="recalc();saveAll()"><i class="fa-solid fa-check"></i> Apply</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ ENTER FIGURES ══════════ -->
+  <div id="panel-entry" class="panel">
+    <div class="card" style="margin-bottom:12px;">
+      <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-building-store" style="color:#1a73c8;"></i> Bustl POS <span class="src src-bustl">Bustl</span></div></div>
+      <div class="card-body">
+        <div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));">
+          <div class="fg"><label>Daily sales ($)</label><input type="number" id="e-bsales" placeholder="0.00" oninput="recalc()"></div>
+          <div class="fg"><label>Number of orders</label><input type="number" id="e-bord" placeholder="0" oninput="recalc()"></div>
+          <div class="fg"><label>Avg order value ($)</label><input type="number" id="e-baov" placeholder="0.00" oninput="recalc()"></div>
+          <div class="fg"><label>Same day last week ($)</label><input type="number" id="e-blw" placeholder="0.00" oninput="recalc()"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:12px;">
+      <div class="card-hdr"><div class="card-title"><i class="fa-brands fa-shopify" style="color:#1a7a3c;"></i> Shopify <span class="src src-shopify">Shopify</span></div></div>
+      <div class="card-body">
+        <div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));">
+          <div class="fg"><label>Online sales ($)</label><input type="number" id="e-ssales" placeholder="0.00" oninput="recalc()"></div>
+          <div class="fg"><label>Online orders</label><input type="number" id="e-sord" placeholder="0" oninput="recalc()"></div>
+          <div class="fg"><label>Refunds ($)</label><input type="number" id="e-sref" placeholder="0.00" oninput="recalc()"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:12px;">
+      <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-building-columns" style="color:#2b4bdb;"></i> Xero <span class="src src-xero">Xero</span></div></div>
+      <div class="card-body">
+        <div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));">
+          <div class="fg"><label>Bank balance ($)</label><input type="number" id="e-bank" placeholder="0.00" oninput="recalc()"></div>
+          <div class="fg"><label>Today's expenses ($)</label><input type="number" id="e-exp" placeholder="0.00" oninput="recalc()"></div>
+          <div class="fg"><label>COGS / food cost ($)</label><input type="number" id="e-cogs" placeholder="0.00" oninput="recalc()"></div>
+          <div class="fg"><label>Invoices received ($)</label><input type="number" id="e-xinv" placeholder="0.00" oninput="recalc()"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:12px;">
+      <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-money-bill-wave" style="color:#b85c00;"></i> iPayroll <span class="src src-ipay">iPayroll</span></div></div>
+      <div class="card-body">
+        <div class="fgrid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));">
+          <div class="fg"><label>Labour cost today ($)</label><input type="number" id="e-lab" placeholder="0.00" oninput="recalc()"></div>
+          <div class="fg"><label>Period wages to date ($)</label><input type="number" id="e-pwages" placeholder="0.00" oninput="recalc()"></div>
+          <div class="fg"><label>Pay period (days)</label><input type="number" id="e-pdays" placeholder="14" oninput="recalc()"></div>
+          <div class="fg"><label>Days elapsed</label><input type="number" id="e-pelap" placeholder="1" oninput="recalc()"></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="recalc();saveAll();go('overview',null)"><i class="fa-solid fa-chart-line"></i> Save & view dashboard</button>
+      <button class="btn btn-ghost" onclick="saveAll()"><i class="fa-solid fa-floppy-disk"></i> Save only</button>
+    </div>
+  </div>
+
+  <!-- ══════════ RECIPE COSTING ══════════ -->
+  <div id="panel-recipes" class="panel">
+    <div class="section-hdr">
+      <h2>Recipe costing</h2>
+      <button class="btn btn-primary btn-sm" onclick="openRecipeForm()"><i class="fa-solid fa-plus"></i> New recipe</button>
+    </div>
+    <!-- Recipe form (hidden by default) -->
+    <div id="recipeForm" style="display:none;" class="card" style="margin-bottom:14px;">
+      <div class="card-hdr"><div class="card-title" id="recipeFormTitle"><i class="fa-solid fa-book-open"></i> New recipe</div></div>
+      <div class="card-body">
+        <div class="fgrid" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:10px;">
+          <div class="fg"><label>Recipe name</label><input type="text" id="rf-name" placeholder="e.g. Croissant"></div>
+          <div class="fg"><label>Batch size (units)</label><input type="number" id="rf-batch" placeholder="12" oninput="recipeCalc()"></div>
+          <div class="fg"><label>Sell price per unit ($)</label><input type="number" id="rf-price" placeholder="0.00" oninput="recipeCalc()"></div>
+        </div>
+        <div style="margin-bottom:8px;font-size:11px;font-weight:600;color:var(--dust);text-transform:uppercase;letter-spacing:.06em;">Ingredients</div>
+        <table class="tbl" style="margin-bottom:10px;">
+          <thead><tr><th>Ingredient</th><th>Qty used</th><th>Unit</th><th>Cost per unit ($)</th><th>Line cost</th><th></th></tr></thead>
+          <tbody id="rfIngBody"></tbody>
+        </table>
+        <button class="btn btn-ghost btn-sm" onclick="addRfIng()" style="margin-bottom:12px;"><i class="fa-solid fa-plus"></i> Add ingredient</button>
+        <div style="background:var(--cream);border-radius:8px;padding:12px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div class="rstat"><div class="rstat-label">Batch cost</div><div class="rstat-val" id="rf-batchCost">$0.00</div></div>
+          <div class="rstat"><div class="rstat-label">Cost per unit</div><div class="rstat-val" id="rf-unitCost">$0.00</div></div>
+          <div class="rstat"><div class="rstat-label">Gross margin</div><div class="rstat-val" id="rf-margin">0%</div></div>
+          <div class="rstat"><div class="rstat-label">Profit per unit</div><div class="rstat-val" id="rf-unitProfit">$0.00</div></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="saveRecipe()"><i class="fa-solid fa-check"></i> Save recipe</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('recipeForm').style.display='none'">Cancel</button>
+        </div>
+      </div>
+    </div>
+    <div id="recipeList"></div>
+    <!-- Summary -->
+    <div class="card">
+      <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-trophy"></i> Most profitable items</div></div>
+      <div class="card-body">
+        <table class="tbl"><thead><tr><th>Recipe</th><th>Cost/unit</th><th>Sell price</th><th>Margin</th><th>Profit/unit</th><th>Rating</th></tr></thead><tbody id="recipeSummary"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ DAILY PREP ══════════ -->
+  <div id="panel-prep" class="panel">
+    <div class="section-hdr">
+      <h2>Daily prep calculator</h2>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost btn-sm" onclick="clearPrep()"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+        <button class="btn btn-primary btn-sm" onclick="runPrep()"><i class="fa-solid fa-calculator"></i> Calculate & deduct stock</button>
+      </div>
+    </div>
+    <div class="g65">
+      <div class="card">
+        <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-list-check"></i> How many are you making today?</div></div>
+        <div class="card-body">
+          <div id="prepList"></div>
+          <div id="prepNoneMsg" style="font-size:12px;color:var(--dust);padding:8px 0;">Add recipes in Recipe Costing first, then they appear here.</div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-dollar-sign"></i> Today's prep cost</div></div>
+          <div class="card-body">
+            <div class="dr"><span class="dr-l">Total ingredient cost</span><span class="dr-v" id="prep-ingCost">$0.00</span></div>
+            <div class="dr"><span class="dr-l">Total units to make</span><span class="dr-v" id="prep-units">0</span></div>
+            <div class="dr"><span class="dr-l">Expected revenue</span><span class="dr-v" id="prep-rev">$0.00</span></div>
+            <div class="dr" style="font-weight:600;"><span class="dr-l">Expected gross profit</span><span class="dr-v pos" id="prep-profit">$0.00</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-boxes-stacked"></i> Ingredients needed</div></div>
+          <div class="card-body" id="prepIngNeeded" style="padding-top:6px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-triangle-exclamation"></i> Stock warnings for today's prep</div></div>
+      <div class="card-body" id="prepStockWarnings" style="padding-top:6px;"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ WASTE TRACKER ══════════ -->
+  <div id="panel-waste" class="panel">
+    <div class="section-hdr"><h2>Waste tracker</h2></div>
+    <div class="metrics-row">
+      <div class="mc dark"><div class="mc-label">Waste cost today</div><div class="mc-val" id="wt-today">$0.00</div><div class="mc-sub">All logged waste</div></div>
+      <div class="mc" id="wt-pctCard"><div class="mc-label">Waste % of revenue</div><div class="mc-val" id="wt-pct">0%</div><div class="mc-sub">Target &lt; 5%</div></div>
+      <div class="mc"><div class="mc-label">This week</div><div class="mc-val" id="wt-week">$0.00</div><div class="mc-sub">Running total</div></div>
+      <div class="mc"><div class="mc-label">Most wasted item</div><div class="mc-val" id="wt-top" style="font-size:14px;">—</div><div class="mc-sub">This week</div></div>
+    </div>
+    <div class="g65">
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title"><i class="fa-solid fa-trash-can"></i> Log waste</div>
+        </div>
+        <div class="card-body">
+          <div class="fgrid" style="grid-template-columns:1fr 1fr 1fr auto;align-items:end;gap:8px;margin-bottom:12px;">
+            <div class="fg"><label>Item / product</label><input type="text" id="w-item" placeholder="e.g. Croissants" list="wasteItemsList"><datalist id="wasteItemsList"></datalist></div>
+            <div class="fg"><label>Quantity wasted</label><input type="number" id="w-qty" placeholder="0" min="0"></div>
+            <div class="fg"><label>Unit cost ($)</label><input type="number" id="w-cost" placeholder="0.00" step="0.01"></div>
+            <button class="btn btn-danger btn-sm" onclick="logWaste()" style="height:34px;"><i class="fa-solid fa-plus"></i> Log</button>
+          </div>
+          <div style="margin-bottom:8px;font-size:11px;font-weight:600;color:var(--dust);text-transform:uppercase;letter-spacing:.06em;">Today's waste log</div>
+          <div id="wasteLog"></div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-chart-bar"></i> Waste by category</div></div>
+          <div class="card-body"><div class="chart-wrap h160"><canvas id="wasteChart" role="img" aria-label="Bar chart of waste by item">Waste by item.</canvas></div></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-lightbulb"></i> Waste reduction tips</div></div>
+          <div class="card-body" id="wasteTips" style="font-size:12px;color:var(--dust);line-height:1.6;padding-top:6px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-calendar-week"></i> Weekly waste history</div></div>
+      <div class="card-body"><div class="chart-wrap h140"><canvas id="wasteWeekChart" role="img" aria-label="Line chart of daily waste cost">Waste trend.</canvas></div></div>
+    </div>
+  </div>
+
+  <!-- ══════════ INVENTORY ══════════ -->
+  <div id="panel-inventory" class="panel">
+    <div class="section-hdr"><h2>Ingredient stock</h2><button class="btn btn-primary btn-sm" onclick="addIngredient()"><i class="fa-solid fa-plus"></i> Add ingredient</button></div>
+    <div class="card" style="margin-bottom:14px;">
+      <div class="card-body" style="padding:0;">
+        <table class="tbl">
+          <thead><tr><th>Ingredient</th><th>Unit</th><th>On hand</th><th>Min stock</th><th>Level</th><th>Status</th><th>Cost/unit ($)</th><th></th></tr></thead>
+          <tbody id="invBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-triangle-exclamation"></i> Reorder alerts</div></div>
+      <div class="card-body" id="reorderAlerts"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ PURCHASES ══════════ -->
+  <div id="panel-purchases" class="panel">
+    <div class="metrics-row">
+      <div class="mc"><div class="mc-label">This week</div><div class="mc-val" id="pur-week">$0</div><div class="mc-sub" id="pur-weekPct">0% of week sales</div></div>
+      <div class="mc"><div class="mc-label">This month (est.)</div><div class="mc-val" id="pur-month">$0</div><div class="mc-sub">Based on week avg</div></div>
+      <div class="mc" id="pur-pctCard"><div class="mc-label">Purchases % of sales</div><div class="mc-val" id="pur-pct">0%</div><div class="mc-sub">Target ≤ 32%</div></div>
+    </div>
+    <div class="g65">
+      <div class="card">
+        <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-chart-bar"></i> Daily supplier spend — this week</div></div>
+        <div class="card-body"><div class="chart-wrap h180"><canvas id="purChart" role="img" aria-label="Bar chart of daily supplier spend">Supplier spend.</canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-hdr" style="padding-bottom:8px;"><div class="card-title"><i class="fa-solid fa-truck"></i> Supplier breakdown</div></div>
+        <div class="card-body" style="padding-top:0;" id="supplierList"></div>
+        <div class="card-body" style="border-top:1px solid var(--border);padding-top:10px;">
+          <div class="fgrid" style="grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;">
+            <div class="fg"><label>Supplier</label><input type="text" id="s-name" placeholder="Name"></div>
+            <div class="fg"><label>Amount ($)</label><input type="number" id="s-amt" placeholder="0"></div>
+            <button class="btn btn-primary btn-sm" onclick="addSupplier()" style="height:34px;"><i class="fa-solid fa-plus"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ STAFF HOURS ══════════ -->
+  <div id="panel-staff" class="panel">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+      <h2 style="font-size:14px;font-weight:600;">Clock-in / Clock-out</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <input type="text" id="ns-name" placeholder="Name" style="padding:7px 9px;border:1px solid var(--border-strong);border-radius:7px;font-size:12px;width:130px;">
+        <input type="text" id="ns-role" placeholder="Role" style="padding:7px 9px;border:1px solid var(--border-strong);border-radius:7px;font-size:12px;width:120px;">
+        <button class="btn btn-primary btn-sm" onclick="addStaff()"><i class="fa-solid fa-plus"></i> Add</button>
+      </div>
+    </div>
+    <div class="staff-grid" id="staffGrid"></div>
+    <div class="card" style="margin-top:14px;">
+      <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-table"></i> Today's hours log</div></div>
+      <div class="card-body">
+        <table class="tbl"><thead><tr><th>Name</th><th>Role</th><th>Hours</th><th>Est. cost</th><th>Status</th></tr></thead><tbody id="hoursTable"></tbody></table>
+        <div style="display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;font-weight:600;">
+          <span>Total</span><span id="totalHrsDisp">0.0 hrs — $0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ PAYROLL ══════════ -->
+  <div id="panel-payroll" class="panel">
+    <div class="metrics-row">
+      <div class="mc dark"><div class="mc-label">Period wages to date</div><div class="mc-val" id="pay-todate">$0</div><div class="mc-sub" id="pay-sub">0 of 14 days</div></div>
+      <div class="mc"><div class="mc-label">Full period forecast</div><div class="mc-val" id="pay-fc">$0</div><div class="mc-sub">Extrapolated</div></div>
+      <div class="mc" id="pay-pctCard"><div class="mc-label">Labour % (period)</div><div class="mc-val" id="pay-pct">0%</div><div class="mc-sub">of period revenue</div></div>
+      <div class="mc"><div class="mc-label">Daily avg labour</div><div class="mc-val" id="pay-daily">$0</div><div class="mc-sub">This period</div></div>
+    </div>
+    <div class="g65">
+      <div class="card">
+        <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-users"></i> Staff <span class="src src-ipay">iPayroll</span></div></div>
+        <div class="card-body" id="payStaffList"></div>
+        <div class="card-body" style="border-top:1px solid var(--border);">
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--dust);margin-bottom:4px;"><span>Period progress</span><span id="pay-progLabel">0/14</span></div>
+          <div class="prog-track"><div class="prog-fill" id="pay-progBar" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-chart-line"></i> Labour % trend</div></div>
+        <div class="card-body"><div class="chart-wrap h200"><canvas id="labTrendChart" role="img" aria-label="Labour % trend">Labour trend.</canvas></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ GST ══════════ -->
+  <div id="panel-gst" class="panel">
+    <div class="g2">
+      <div>
+        <div class="gst-box">
+          <div style="font-size:10px;color:rgba(255,255,255,0.35);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">GST Position — 15% NZ</div>
+          <div class="gst-row"><span class="gn">Total revenue (incl. GST)</span><span class="gv" id="gst-rev">$0</span></div>
+          <div class="gst-row"><span class="gn">GST collected (1/11 of rev)</span><span class="gv" id="gst-col">$0</span></div>
+          <div class="gst-row"><span class="gn">GST on expenses (claimable)</span><span class="gv" id="gst-exp">$0</span></div>
+          <div class="gst-row"><span class="gn">GST on COGS (claimable)</span><span class="gv" id="gst-cog">$0</span></div>
+          <div class="gst-row" style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.15);"><span class="gn">Net GST payable</span><span class="gv" id="gst-net" style="font-size:18px;color:#F5D9CD;">$0</span></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><div class="card-title">GST period</div></div>
+          <div class="card-body">
+            <div class="dr"><span class="dr-l">Filing period</span><span class="dr-v">Monthly</span></div>
+            <div class="dr"><span class="dr-l">Days elapsed</span><span class="dr-v" id="gst-days">—</span></div>
+            <div class="dr"><span class="dr-l">Daily GST (avg)</span><span class="dr-v" id="gst-daily">$0</span></div>
+            <div class="dr"><span class="dr-l">Projected month-end</span><span class="dr-v" id="gst-proj">$0</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-chart-area"></i> Cumulative GST accrual</div></div>
+        <div class="card-body"><div class="chart-wrap h200"><canvas id="gstChart" role="img" aria-label="GST accrual trend">GST trend.</canvas></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ BILLS ══════════ -->
+  <div id="panel-bills" class="panel">
+    <div class="section-hdr"><h2>Bills & invoices</h2><button class="btn btn-primary btn-sm" onclick="addBill()"><i class="fa-solid fa-plus"></i> Add bill</button></div>
+    <div class="card" style="margin-bottom:14px;">
+      <div class="card-body" style="padding:0;">
+        <table class="tbl"><thead><tr><th>Description</th><th>Amount</th><th>Due date</th><th>Status</th><th>Source</th><th></th></tr></thead><tbody id="billsTable"></tbody></table>
+      </div>
+    </div>
+    <div class="metrics-row">
+      <div class="mc"><div class="mc-label">Total outstanding</div><div class="mc-val" id="bl-total">$0</div></div>
+      <div class="mc danger"><div class="mc-label">Overdue</div><div class="mc-val" id="bl-over">$0</div></div>
+      <div class="mc warn"><div class="mc-label">Due within 7 days</div><div class="mc-val" id="bl-soon">$0</div></div>
+      <div class="mc good"><div class="mc-label">Due later</div><div class="mc-val" id="bl-later">$0</div></div>
+    </div>
+  </div>
+
+  <!-- ══════════ INTEGRATIONS ══════════ -->
+  <div id="panel-integrations" class="panel">
+    <div class="g2">
+      <div class="card">
+        <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-plug"></i> Data sources</div></div>
+        <div class="card-body">
+          <div class="int-card">
+            <div class="int-hdr"><div class="int-icon" style="background:#E8F4FD;color:#1a73c8;"><i class="fa-solid fa-store"></i></div><div><div class="int-name">Bustl POS</div><div style="font-size:10px;color:var(--dust);">Daily sales, orders, AOV</div></div><div class="int-status int-pending">Manual entry</div></div>
+            <div class="int-desc">Enter daily Bustl figures in Enter Figures. To automate: export daily CSV from Bustl → email to Make.com email parser.</div>
+          </div>
+          <div class="int-card">
+            <div class="int-hdr"><div class="int-icon" style="background:#E6F6EC;color:#1a7a3c;"><i class="fa-brands fa-shopify"></i></div><div><div class="int-name">Shopify</div><div style="font-size:10px;color:var(--dust);">Online orders & revenue</div></div><div class="int-status int-pending">Manual entry</div></div>
+            <div class="int-desc">Connect via Make.com in ~20 min. Native Shopify connector available. See guide →</div>
+          </div>
+          <div class="int-card">
+            <div class="int-hdr"><div class="int-icon" style="background:#EEF0FB;color:#2b4bdb;"><i class="fa-solid fa-building-columns"></i></div><div><div class="int-name">Xero</div><div style="font-size:10px;color:var(--dust);">Bank, bills, GST, expenses</div></div><div class="int-status int-pending">Manual entry</div></div>
+            <div class="int-desc">Xero has a native Make.com connector. OAuth — just log in when prompted. Pulls bank balance and invoices.</div>
+          </div>
+          <div class="int-card">
+            <div class="int-hdr"><div class="int-icon" style="background:#FFF3E0;color:#b85c00;"><i class="fa-solid fa-money-bill-wave"></i></div><div><div class="int-name">iPayroll</div><div style="font-size:10px;color:var(--dust);">Wages & payroll totals</div></div><div class="int-status int-pending">Manual entry</div></div>
+            <div class="int-desc">iPayroll sends email summaries. Make.com watches your email and parses the wage total automatically each pay day.</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hdr"><div class="card-title"><i class="fa-solid fa-wrench"></i> Automate with Make.com ($9/mo)</div></div>
+        <div class="card-body">
+          <div class="guide-step"><div class="step-num">1</div><div><div class="step-title">Sign up at make.com</div><div class="step-desc">Choose the Core plan ($9 USD/mo). The free plan has limited runs.</div></div></div>
+          <div class="guide-step"><div class="step-num">2</div><div><div class="step-title">Connect Shopify (20 min)</div><div class="step-desc">New Scenario → Shopify module → Watch Orders → authorise with your store URL and API key (Shopify Admin → Apps → API). Set to run daily at 8pm.</div></div></div>
+          <div class="guide-step"><div class="step-num">3</div><div><div class="step-title">Connect Xero (15 min)</div><div class="step-desc">Add Xero module → Get Bank Transactions + List Invoices. OAuth connects by logging in to Xero.</div></div></div>
+          <div class="guide-step"><div class="step-num">4</div><div><div class="step-title">iPayroll via email</div><div class="step-desc">Make Email module → Watch Emails → filter for iPayroll → Text Parser extracts wage total. Auto-fills on pay day.</div></div></div>
+          <div class="guide-step"><div class="step-num">5</div><div><div class="step-title">Bustl via CSV email</div><div class="step-desc">Export daily report from Bustl → forward to a Gmail. Make watches and parses the sales total.</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /content -->
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+const today = new Date();
+const DEF = {bsales:3240,bord:234,baov:13.85,blw:3722,ssales:680,sord:12,sref:0,bank:18400,exp:420,cogs:1050,xinv:0,lab:820,pwages:4800,pdays:14,pelap:8,thrLab:30,thrCog:32,thrWaste:5,thrSales:2800,thrInv:3};
+let D = JSON.parse(localStorage.getItem('pm_d')||'null')||{...DEF};
+let suppliers = JSON.parse(localStorage.getItem('pm_sup')||'null')||[{name:'Gilmours (dry goods)',amount:680},{name:'Bidfood (dairy)',amount:520},{name:'Local flour mill',amount:310},{name:'Coffee supplier',amount:220}];
+let staffData = JSON.parse(localStorage.getItem('pm_stf')||'null')||[{name:'Ana R.',role:'Head Baker',rate:28,in:false,clockedAt:null,totalMins:312},{name:'James T.',role:'Barista',rate:22,in:false,clockedAt:null,totalMins:180},{name:'Mia L.',role:'Front of house',rate:21,in:true,clockedAt:Date.now()-3600000,totalMins:240},{name:'Sam K.',role:'Kitchen hand',rate:20,in:false,clockedAt:null,totalMins:195}];
+let ingredients = JSON.parse(localStorage.getItem('pm_inv')||'null')||[{name:'Bread flour',unit:'kg',qty:48,min:20,cost:1.20},{name:'Butter',unit:'kg',qty:12,min:10,cost:8.50},{name:'Eggs',unit:'doz',qty:18,min:6,cost:6.00},{name:'Milk',unit:'L',qty:30,min:15,cost:2.20},{name:'Caster sugar',unit:'kg',qty:22,min:8,cost:1.80},{name:'Almond meal',unit:'kg',qty:4,min:5,cost:14.00},{name:'Vanilla paste',unit:'jar',qty:2,min:2,cost:18.00},{name:'Yeast',unit:'kg',qty:1.5,min:1,cost:12.00}];
+let bills = JSON.parse(localStorage.getItem('pm_bil')||'null')||[{desc:'Flour supplier invoice',amount:1240,due:'2026-06-17',source:'Xtramail'},{desc:'Rent — June',amount:4200,due:'2026-06-23',source:'Xero'},{desc:'Electricity',amount:380,due:'2026-06-30',source:'Xero'},{desc:'Coffee beans',amount:620,due:'2026-06-18',source:'Xtramail'},{desc:'Packaging supplies',amount:185,due:'2026-06-21',source:'Xtramail'}];
+let recipes = JSON.parse(localStorage.getItem('pm_rec')||'null')||[{name:'Croissant',batch:12,price:5.50,ings:[{name:'Bread flour',qty:0.5,unit:'kg',cost:1.20},{name:'Butter',qty:0.3,unit:'kg',cost:8.50},{name:'Eggs',qty:0.25,unit:'doz',cost:6.00},{name:'Milk',qty:0.2,unit:'L',cost:2.20}]},{name:'Almond Tart',batch:8,price:7.00,ings:[{name:'Butter',qty:0.2,unit:'kg',cost:8.50},{name:'Almond meal',qty:0.3,unit:'kg',cost:14.00},{name:'Caster sugar',qty:0.15,unit:'kg',cost:1.80},{name:'Eggs',qty:0.25,unit:'doz',cost:6.00}]},{name:'Sourdough Loaf',batch:4,price:12.00,ings:[{name:'Bread flour',qty:1.2,unit:'kg',cost:1.20},{name:'Yeast',qty:0.01,unit:'kg',cost:12.00}]}];
+let prepQtys = {};
+let wasteLog = JSON.parse(localStorage.getItem('pm_waste')||'null')||[];
+let rfIngs = [];
+let editingRecipeIdx = -1;
+const wkBustl=[2800,3100,2950,3400,3800,4200,D.bsales];
+const wkShopify=[420,510,390,580,720,840,D.ssales];
+const wkPurch=[380,420,310,590,460,720,suppliers.reduce((a,b)=>a+b.amount,0)];
+const days=['Mon','Tue','Wed','Thu','Fri','Sat','Today'];
+
+// ══════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════
+const fmt=v=>'$'+Math.abs(v)<0.01?'$0.00':('$'+Math.round(v).toLocaleString('en-NZ'));
+const fmtD=v=>'$'+(Math.round(v*100)/100).toFixed(2);
+const pct=(a,b)=>b>0?(a/b*100).toFixed(1)+'%':'0%';
+const daysUntil=d=>Math.round((new Date(d)-today)/86400000);
+const g=id=>parseFloat(document.getElementById(id)?.value)||0;
+const el=id=>document.getElementById(id);
+
+// DATE
+el('sideDay').textContent=today.toLocaleDateString('en-NZ',{weekday:'long'});
+el('sideDate').textContent=today.toLocaleDateString('en-NZ',{day:'numeric',month:'short',year:'numeric'});
+
+// ══════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════
+const titles={overview:"Today's Overview",alerts:"Smart Alerts",entry:"Enter Daily Figures",recipes:"Recipe Costing",prep:"Daily Prep Calculator",waste:"Waste Tracker",inventory:"Ingredient Inventory",purchases:"Supplier Purchases",staff:"Staff Hours",payroll:"Payroll & Wages",gst:"GST & Tax",bills:"Bills & Invoices",integrations:"Integrations"};
+function go(name,navEl){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el('panel-'+name).classList.add('active');
+  if(navEl)navEl.classList.add('active');
+  else{document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+name+"'"))n.classList.add('active');});}
+  el('panelTitle').textContent=titles[name]||'';
+  if(name==='recipes')renderRecipes();
+  if(name==='prep')renderPrep();
+  if(name==='waste')renderWaste();
+  if(name==='inventory')renderInventory();
+  if(name==='staff')renderStaff();
+}
+
+// ══════════════════════════════════════════════
+// INPUT POPULATE
+// ══════════════════════════════════════════════
+function populateInputs(){
+  const m={'e-bsales':D.bsales,'e-bord':D.bord,'e-baov':D.baov,'e-blw':D.blw,'e-ssales':D.ssales,'e-sord':D.sord,'e-sref':D.sref,'e-bank':D.bank,'e-exp':D.exp,'e-cogs':D.cogs,'e-xinv':D.xinv,'e-lab':D.lab,'e-pwages':D.pwages,'e-pdays':D.pdays,'e-pelap':D.pelap,'thr-lab':D.thrLab,'thr-cog':D.thrCog,'thr-waste':D.thrWaste,'thr-sales':D.thrSales,'thr-inv':D.thrInv};
+  Object.entries(m).forEach(([id,v])=>{const e=el(id);if(e&&v!==undefined)e.value=v;});
+}
+function readInputs(){
+  D.bsales=g('e-bsales');D.bord=g('e-bord');D.baov=g('e-baov');D.blw=g('e-blw');
+  D.ssales=g('e-ssales');D.sord=g('e-sord');D.sref=g('e-sref');
+  D.bank=g('e-bank');D.exp=g('e-exp');D.cogs=g('e-cogs');D.xinv=g('e-xinv');
+  D.lab=g('e-lab');D.pwages=g('e-pwages');D.pdays=g('e-pdays')||14;D.pelap=g('e-pelap')||1;
+  D.thrLab=g('thr-lab')||30;D.thrCog=g('thr-cog')||32;D.thrWaste=g('thr-waste')||5;
+  D.thrSales=g('thr-sales')||2800;D.thrInv=g('thr-inv')||3;
+}
+
+// ══════════════════════════════════════════════
+// MAIN RECALC
+// ══════════════════════════════════════════════
+function recalc(){
+  readInputs();
+  const rev=D.bsales+D.ssales-D.sref;
+  const wasteCost=wasteLog.filter(w=>{const d=new Date(w.date);return d.toDateString()===today.toDateString();}).reduce((a,w)=>a+w.cost,0);
+  const profit=rev-D.lab-D.cogs-D.exp-wasteCost;
+  const labP=rev>0?D.lab/rev*100:0;
+  const cogP=rev>0?D.cogs/rev*100:0;
+  const wstP=rev>0?wasteCost/rev*100:0;
+  const gstCol=rev/11;const gstExp=D.exp/11;const gstCog=D.cogs/11;const gstNet=gstCol-gstExp-gstCog;
+  const netCash=D.bank-gstNet;
+  const payFc=D.pelap>0?D.pwages/D.pelap*D.pdays:0;
+  const prRev=wkBustl.reduce((a,b)=>a+b,0)+wkShopify.reduce((a,b)=>a+b,0);
+  const payP=prRev>0?D.pwages/prRev*100:0;
+  const dEl=today.getDate();const dInM=30;
+  const purWk=wkPurch.reduce((a,b)=>a+b,0);
+  const wkSales=wkBustl.reduce((a,b)=>a+b,0)+wkShopify.reduce((a,b)=>a+b,0);
+
+  // OVERVIEW
+  el('ov-rev').textContent=fmt(rev);
+  el('ov-profit').textContent=fmt(profit);
+  el('ov-profitPct').textContent=(rev>0?(profit/rev*100).toFixed(1):0)+'% margin';
+  el('ov-bustl').textContent=fmt(D.bsales);
+  el('ov-bustlOrd').textContent=D.bord+' orders';
+  el('ov-shopify').textContent=fmt(D.ssales);
+  el('ov-shopifyOrd').textContent=D.sord+' orders';
+  el('ov-labour').textContent=fmt(D.lab);
+  el('ov-labPct').textContent=labP.toFixed(1)+'% of revenue';
+  el('ov-cogs').textContent=fmt(D.cogs);
+  el('ov-cogPct').textContent=cogP.toFixed(1)+'% of revenue';
+  el('ov-waste').textContent=fmtD(wasteCost);
+  el('ov-wastePct').textContent=wstP.toFixed(1)+'% of revenue';
+  el('ov-bank').textContent=fmt(D.bank);
+  el('ov-gst').textContent=fmt(gstNet);
+  el('ov-wasteD').textContent=fmtD(wasteCost);
+  el('ov-netcash').textContent=fmt(netCash);
+  setMC('ov-profitCard',profit>200?'good':profit>0?'warn':'danger');
+  setMC('ov-labCard',labP<D.thrLab?'good':labP<D.thrLab*1.15?'warn':'danger');
+  setMC('ov-cogCard',cogP<D.thrCog?'good':cogP<D.thrCog*1.15?'warn':'danger');
+  setMC('ov-wasteCard',wstP<D.thrWaste?'good':wstP<D.thrWaste*1.5?'warn':'danger');
+
+  // GST
+  el('gst-rev').textContent=fmt(rev);el('gst-col').textContent=fmt(gstCol);
+  el('gst-exp').textContent=fmt(gstExp);el('gst-cog').textContent=fmt(gstCog);
+  el('gst-net').textContent=fmt(gstNet);
+  el('gst-days').textContent=dEl+' of '+dInM;
+  el('gst-daily').textContent=fmt(gstNet/dEl);
+  el('gst-proj').textContent=fmt(gstNet/dEl*dInM);
+
+  // PAYROLL
+  el('pay-todate').textContent=fmt(D.pwages);
+  el('pay-sub').textContent=D.pelap+' of '+D.pdays+' days';
+  el('pay-fc').textContent=fmt(payFc);
+  el('pay-pct').textContent=payP.toFixed(1)+'%';
+  el('pay-daily').textContent=fmt(D.pelap>0?D.pwages/D.pelap:0);
+  el('pay-progLabel').textContent=D.pelap+' / '+D.pdays;
+  el('pay-progBar').style.width=Math.min(100,D.pelap/D.pdays*100)+'%';
+  setMC('pay-pctCard',payP<28?'good':payP<35?'warn':'danger');
+  renderPayStaff();
+
+  // PURCHASES
+  el('pur-week').textContent=fmt(purWk);
+  el('pur-weekPct').textContent=(purWk/wkSales*100).toFixed(1)+'% of week sales';
+  el('pur-month').textContent=fmt(purWk*4.3);
+  el('pur-pct').textContent=cogP.toFixed(1)+'%';
+  setMC('pur-pctCard',cogP<D.thrCog?'good':cogP<D.thrCog*1.15?'warn':'danger');
+  renderSuppliers();
+
+  // WASTE METRICS
+  const weekWaste=wasteLog.reduce((a,w)=>a+w.cost,0);
+  const topItem=getTopWasteItem();
+  if(el('wt-today'))el('wt-today').textContent=fmtD(wasteCost);
+  if(el('wt-pct'))el('wt-pct').textContent=wstP.toFixed(1)+'%';
+  if(el('wt-week'))el('wt-week').textContent=fmtD(weekWaste);
+  if(el('wt-top'))el('wt-top').textContent=topItem||'—';
+  if(el('wt-pctCard'))setMC('wt-pctCard',wstP<D.thrWaste?'good':wstP<D.thrWaste*1.5?'warn':'danger');
+
+  buildAlerts(rev,profit,labP,cogP,wstP,gstNet);
+  renderBills();
+  renderOvBills();
+  renderOvStaff();
+  renderStockAlerts();
+  updateCharts();
+}
+
+function setMC(id,cls){const e=el(id);if(!e)return;e.classList.remove('good','warn','danger');if(cls)e.classList.add(cls);}
+
+// ══════════════════════════════════════════════
+// ALERTS
+// ══════════════════════════════════════════════
+function buildAlerts(rev,profit,labP,cogP,wstP,gstNet){
+  const alerts=[];
+  if(labP>=D.thrLab)alerts.push({t:labP>D.thrLab*1.15?'danger':'warn',i:'fa-user-clock',m:`Labour at ${labP.toFixed(1)}% — above ${D.thrLab}% target`,s:`Labour: ${fmt(D.lab)} on ${fmt(rev)} revenue`});
+  if(cogP>=D.thrCog)alerts.push({t:cogP>D.thrCog*1.15?'danger':'warn',i:'fa-truck',m:`Food cost at ${cogP.toFixed(1)}% — above ${D.thrCog}% target`,s:`COGS: ${fmt(D.cogs)} on ${fmt(rev)} revenue`});
+  if(wstP>=D.thrWaste)alerts.push({t:'warn',i:'fa-trash-can',m:`Waste at ${wstP.toFixed(1)}% — above ${D.thrWaste}% target`,s:'Check Waste Tracker for top wasted items'});
+  if(rev<D.thrSales&&rev>0)alerts.push({t:'warn',i:'fa-chart-line',m:`Sales (${fmt(rev)}) below ${fmt(D.thrSales)} daily floor`,s:'Quiet day or a trend to watch?'});
+  if(profit<0)alerts.push({t:'danger',i:'fa-face-frown',m:`Unprofitable today — est. loss of ${fmt(Math.abs(profit))}`,s:'Review labour, food cost, and waste urgently'});
+  const ub=bills.filter(b=>daysUntil(b.due)<=D.thrInv&&daysUntil(b.due)>=0);
+  if(ub.length)alerts.push({t:'warn',i:'fa-file-invoice-dollar',m:`${ub.length} bill${ub.length>1?'s':''} due within ${D.thrInv} days`,s:ub.map(b=>`${b.desc}: ${fmt(b.amount)}`).join(' · ')});
+  const ob=bills.filter(b=>daysUntil(b.due)<0);
+  if(ob.length)alerts.push({t:'danger',i:'fa-circle-exclamation',m:`${ob.length} overdue bill${ob.length>1?'s':''} — action needed`,s:ob.map(b=>b.desc).join(', ')});
+  const ls=ingredients.filter(i=>i.qty<=i.min);
+  if(ls.length)alerts.push({t:'warn',i:'fa-boxes-stacked',m:`${ls.length} ingredient${ls.length>1?'s':''} at or below minimum`,s:ls.map(i=>i.name).join(', ')});
+  if(!alerts.length)alerts.push({t:'good',i:'fa-circle-check',m:'All metrics within targets — great day!',s:'No alerts'});
+  const html=alerts.map(a=>`<div class="alert-item ${a.t}"><i class="fa-solid ${a.i}"></i><div><div class="alert-msg">${a.m}</div><div class="alert-sub">${a.s}</div></div></div>`).join('');
+  const real=alerts.filter(a=>a.t!=='good');
+  if(el('ov-alerts'))el('ov-alerts').innerHTML=real.slice(0,2).map(a=>`<div class="alert-item ${a.t}"><i class="fa-solid ${a.i}"></i><div><div class="alert-msg">${a.m}</div></div></div>`).join('');
+  if(el('allAlerts'))el('allAlerts').innerHTML=html;
+  const b=el('alertBadge');if(b){if(real.length){b.style.display='inline';b.textContent=real.length;}else b.style.display='none';}
+}
+
+// ══════════════════════════════════════════════
+// BILLS
+// ══════════════════════════════════════════════
+function renderBills(){
+  const tb=el('billsTable');if(!tb)return;
+  tb.innerHTML=bills.map((b,i)=>{const d=daysUntil(b.due);const cls=d<0?'pill-red':d<=3?'pill-red':d<=7?'pill-orange':'pill-green';const lbl=d<0?`${Math.abs(d)}d overdue`:d===0?'Due today':d===1?'Due tomorrow':`In ${d}d`;return `<tr><td>${b.desc}</td><td>${fmt(b.amount)}</td><td>${new Date(b.due).toLocaleDateString('en-NZ',{day:'numeric',month:'short'})}</td><td><span class="pill ${cls}">${lbl}</span></td><td><span class="src src-manual">${b.source}</span></td><td><button onclick="removeBill(${i})" style="border:none;background:none;cursor:pointer;color:var(--dust);font-size:11px;"><i class="fa-solid fa-times"></i></button></td></tr>`;}).join('');
+  const tot=bills.reduce((a,b)=>a+b.amount,0);
+  const ov=bills.filter(b=>daysUntil(b.due)<0).reduce((a,b)=>a+b.amount,0);
+  const sn=bills.filter(b=>daysUntil(b.due)>=0&&daysUntil(b.due)<=7).reduce((a,b)=>a+b.amount,0);
+  const lt=bills.filter(b=>daysUntil(b.due)>7).reduce((a,b)=>a+b.amount,0);
+  if(el('bl-total'))el('bl-total').textContent=fmt(tot);
+  if(el('bl-over'))el('bl-over').textContent=fmt(ov);
+  if(el('bl-soon'))el('bl-soon').textContent=fmt(sn);
+  if(el('bl-later'))el('bl-later').textContent=fmt(lt);
+}
+function renderOvBills(){
+  const e=el('ov-bills');if(!e)return;
+  const soon=bills.filter(b=>daysUntil(b.due)<=7).sort((a,b)=>daysUntil(a.due)-daysUntil(b.due)).slice(0,4);
+  e.innerHTML=soon.length?soon.map(b=>{const d=daysUntil(b.due);const cls=d<0?'pill-red':d<=2?'pill-red':d<=7?'pill-orange':'pill-green';const lbl=d<0?`${Math.abs(d)}d overdue`:d===0?'Today':d===1?'Tomorrow':`${d}d`;return `<div class="dr"><span class="dr-l">${b.desc}</span><span style="display:flex;gap:5px;align-items:center;"><span class="pill ${cls}">${lbl}</span><span class="dr-v">${fmt(b.amount)}</span></span></div>`;}).join(''):'<div style="font-size:11px;color:var(--dust);padding:4px 0;">No bills due soon.</div>';
+}
+function addBill(){const desc=prompt('Description:');if(!desc)return;const amount=parseFloat(prompt('Amount ($):'));if(!amount)return;const due=prompt('Due date (YYYY-MM-DD):');if(!due)return;const source=prompt('Source (Xtramail/Xero/Other):')||'Other';bills.push({desc,amount,due,source});saveAll();renderBills();renderOvBills();}
+function removeBill(i){bills.splice(i,1);saveAll();renderBills();renderOvBills();}
+
+// ══════════════════════════════════════════════
+// SUPPLIERS
+// ══════════════════════════════════════════════
+function renderSuppliers(){
+  const e=el('supplierList');if(!e)return;
+  const tot=suppliers.reduce((a,b)=>a+b.amount,0);
+  e.innerHTML=suppliers.map((s,i)=>`<div class="dr"><span class="dr-l">${s.name}</span><span style="display:flex;gap:7px;align-items:center;"><span style="font-size:10px;color:var(--dust);">${tot>0?(s.amount/tot*100).toFixed(0):0}%</span><span class="dr-v">${fmt(s.amount)}</span><button onclick="removeSupplier(${i})" style="border:none;background:none;cursor:pointer;color:var(--dust);font-size:10px;"><i class="fa-solid fa-times"></i></button></span></div>`).join('');
+}
+function addSupplier(){const n=el('s-name').value.trim(),a=parseFloat(el('s-amt').value)||0;if(!n)return;suppliers.push({name:n,amount:a});el('s-name').value='';el('s-amt').value='';saveAll();renderSuppliers();}
+function removeSupplier(i){suppliers.splice(i,1);saveAll();renderSuppliers();}
+
+// ══════════════════════════════════════════════
+// INVENTORY
+// ══════════════════════════════════════════════
+function stSt(q,m){return q<=0?'critical':q<=m?'low':'ok';}
+function renderInventory(){
+  const tb=el('invBody');if(!tb)return;
+  tb.innerHTML=ingredients.map((g,i)=>{const s=stSt(g.qty,g.min);const p=Math.min(100,Math.round(g.qty/(g.min*2)*100));const fc=s==='ok'?'var(--sage)':s==='low'?'var(--gold)':'var(--danger)';const cls=s==='ok'?'pill-green':s==='low'?'pill-orange':'pill-red';const lbl=s==='ok'?'OK':s==='low'?'Low':'Critical';return `<tr><td style="font-weight:500;">${g.name}</td><td style="color:var(--dust);">${g.unit}</td><td><input type="number" value="${g.qty}" step="0.5" onchange="updInv(${i},this.value)" style="width:60px;padding:4px 6px;border:1px solid var(--border);border-radius:5px;font-size:11px;"></td><td style="color:var(--dust);">${g.min}</td><td><div class="ibar"><div class="ifill" style="width:${p}%;background:${fc};"></div></div></td><td><span class="pill ${cls}">${lbl}</span></td><td><input type="number" value="${g.cost||0}" step="0.01" onchange="updCost(${i},this.value)" style="width:60px;padding:4px 6px;border:1px solid var(--border);border-radius:5px;font-size:11px;"></td><td><button onclick="remInv(${i})" style="border:none;background:none;cursor:pointer;color:var(--dust);font-size:10px;"><i class="fa-solid fa-times"></i></button></td></tr>`;}).join('');
+  const lo=ingredients.filter(i=>stSt(i.qty,i.min)!=='ok');
+  const re=el('reorderAlerts');if(re)re.innerHTML=lo.length?lo.map(i=>`<div class="dr"><span class="dr-l">${i.name}</span><span class="pill ${stSt(i.qty,i.min)==='critical'?'pill-red':'pill-orange'}">${i.qty} ${i.unit} — ${stSt(i.qty,i.min)==='critical'?'Order immediately':'Running low'}</span></div>`).join(''):'<div style="font-size:11px;color:var(--dust);padding:6px 0;"><i class="fa-solid fa-check" style="color:var(--sage);"></i> All stock levels OK</div>';
+}
+function renderStockAlerts(){
+  const e=el('ov-stock');if(!e)return;
+  const lo=ingredients.filter(i=>stSt(i.qty,i.min)!=='ok');
+  e.innerHTML=lo.length?lo.map(i=>`<div class="dr" style="padding:5px 0;"><span class="dr-l" style="font-size:11px;">${i.name}</span><span class="pill ${stSt(i.qty,i.min)==='critical'?'pill-red':'pill-orange'}" style="font-size:9px;">${i.qty} ${i.unit}</span></div>`).join(''):'<div style="font-size:11px;color:var(--dust);padding:4px 0;"><i class="fa-solid fa-check" style="color:var(--sage);"></i> All stock OK</div>';
+}
+function updInv(i,v){ingredients[i].qty=parseFloat(v)||0;saveAll();renderInventory();renderStockAlerts();}
+function updCost(i,v){ingredients[i].cost=parseFloat(v)||0;saveAll();renderInventory();renderRecipes();}
+function remInv(i){ingredients.splice(i,1);saveAll();renderInventory();}
+function addIngredient(){const n=prompt('Ingredient name:');if(!n)return;const u=prompt('Unit (kg/L/doz etc):');const q=parseFloat(prompt('Current quantity:')||0);const m=parseFloat(prompt('Minimum stock level:')||0);const c=parseFloat(prompt('Cost per unit ($):')||0);ingredients.push({name:n,unit:u||'unit',qty:q,min:m,cost:c});saveAll();renderInventory();}
+
+// ══════════════════════════════════════════════
+// STAFF
+// ══════════════════════════════════════════════
+function renderStaff(){
+  const gr=el('staffGrid');if(!gr)return;
+  gr.innerHTML=staffData.map((s,i)=>{const elapsed=s.in&&s.clockedAt?Math.floor((Date.now()-s.clockedAt)/60000):0;const h=Math.floor(elapsed/60),m=elapsed%60;const txt=s.in?`${h>0?h+'h ':''} ${m}m clocked in`:'Not clocked in';return `<div class="staff-card ${s.in?'in':''}"><div style="font-weight:600;font-size:13px;">${s.name}</div><div style="font-size:10px;color:var(--dust);margin-top:2px;margin-bottom:9px;">${s.role} · $${s.rate}/hr</div><div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--dust);margin-bottom:9px;"><div class="cdot ${s.in?'in':'out'}"></div><span>${txt}</span></div><button class="clk-btn ${s.in?'btn-out':'btn-in'}" onclick="toggleClock(${i})">${s.in?'<i class="fa-solid fa-stop"></i> Clock out':'<i class="fa-solid fa-play"></i> Clock in'}</button><div style="font-size:10px;color:var(--dust);margin-top:7px;text-align:center;">Today: ${(s.totalMins/60).toFixed(1)} hrs — ${fmt(s.totalMins/60*s.rate)}</div></div>`;}).join('');
+  renderHoursTable();renderOvStaff();
+}
+function renderOvStaff(){
+  const e=el('ov-staff');if(!e)return;
+  const cl=staffData.filter(s=>s.in);
+  e.innerHTML=cl.length?cl.map(s=>`<div style="display:flex;align-items:center;gap:5px;padding:3px 0;font-size:12px;"><div class="cdot in"></div><span>${s.name}</span><span style="color:var(--dust);font-size:10px;margin-left:auto;">${s.role}</span></div>`).join(''):'<div style="font-size:11px;color:var(--dust);">No staff clocked in</div>';
+  let tm=0;staffData.forEach(s=>{const e=s.in&&s.clockedAt?Math.floor((Date.now()-s.clockedAt)/60000):0;tm+=s.totalMins+e;});
+  if(el('ov-hrs'))el('ov-hrs').textContent=(tm/60).toFixed(1)+'h';
+  if(el('ov-estLab'))el('ov-estLab').textContent=fmt(staffData.reduce((a,s)=>{const e=s.in&&s.clockedAt?Math.floor((Date.now()-s.clockedAt)/60000):0;return a+(s.totalMins+e)/60*s.rate;},0));
+}
+function renderHoursTable(){
+  const tb=el('hoursTable');if(!tb)return;
+  let tm=0,tc=0;
+  tb.innerHTML=staffData.map(s=>{const ex=s.in&&s.clockedAt?Math.floor((Date.now()-s.clockedAt)/60000):0;const t=s.totalMins+ex;tm+=t;const c=t/60*s.rate;tc+=c;const st=s.in?'<span class="pill pill-green">In</span>':'<span class="pill pill-gray">Out</span>';return `<tr><td>${s.name}</td><td style="color:var(--dust);">${s.role}</td><td>${(t/60).toFixed(1)} hrs</td><td>${fmt(c)}</td><td>${st}</td></tr>`;}).join('');
+  if(el('totalHrsDisp'))el('totalHrsDisp').textContent=`${(tm/60).toFixed(1)} hrs — ${fmt(tc)} est.`;
+}
+function renderPayStaff(){
+  const e=el('payStaffList');if(!e)return;
+  e.innerHTML=staffData.map(s=>`<div class="dr"><span class="dr-l">${s.name} <span style="color:var(--dust);font-size:10px;">(${s.role})</span></span><span class="dr-v">${fmt(s.totalMins/60*s.rate)} <span style="font-weight:400;font-size:10px;color:var(--dust);">${(s.totalMins/60).toFixed(1)}h @ $${s.rate}/hr</span></span></div>`).join('');
+}
+function toggleClock(i){const s=staffData[i];if(s.in){const m=s.clockedAt?Math.floor((Date.now()-s.clockedAt)/60000):0;s.totalMins+=m;s.in=false;s.clockedAt=null;}else{s.in=true;s.clockedAt=Date.now();}saveAll();renderStaff();}
+function addStaff(){const n=el('ns-name').value.trim(),r=el('ns-role').value.trim();const rate=parseFloat(prompt(`Hourly rate for ${n} ($):`)||'21');if(!n)return;staffData.push({name:n,role:r||'Staff',rate:rate||21,in:false,clockedAt:null,totalMins:0});el('ns-name').value='';el('ns-role').value='';saveAll();renderStaff();}
+setInterval(()=>{renderStaff();},60000);
+
+// ══════════════════════════════════════════════
+// RECIPE COSTING
+// ══════════════════════════════════════════════
+function recipeCost(recipe){return recipe.ings.reduce((a,i)=>a+i.qty*i.cost,0);}
+function recipeMargin(recipe){const cost=recipeCost(recipe)/recipe.batch;return recipe.price>0?(recipe.price-cost)/recipe.price*100:0;}
+
+function renderRecipes(){
+  // populate waste items datalist
+  const dl=el('wasteItemsList');if(dl){dl.innerHTML=recipes.map(r=>`<option value="${r.name}">`).join('');}
+  const rl=el('recipeList');if(!rl)return;
+  if(!recipes.length){rl.innerHTML='<div style="font-size:12px;color:var(--dust);padding:8px 0;">No recipes yet. Click New recipe to add your first one.</div>';return;}
+  rl.innerHTML=recipes.map((r,i)=>{const cost=recipeCost(r);const unitCost=cost/r.batch;const margin=recipeMargin(r);const profit=r.price-unitCost;const mc=margin>60?'good':margin>40?'warn':'danger';return `<div class="recipe-card"><div style="display:flex;align-items:flex-start;justify-content:space-between;"><div><div class="recipe-name">${r.name}</div><div class="recipe-meta">Batch of ${r.batch} · Sell @ $${r.price.toFixed(2)}/unit</div></div><div style="display:flex;gap:6px;"><button class="btn btn-ghost btn-sm" onclick="editRecipe(${i})"><i class="fa-solid fa-pen"></i></button><button class="btn btn-ghost btn-sm" onclick="delRecipe(${i})" style="color:var(--danger);"><i class="fa-solid fa-trash"></i></button></div></div><div class="recipe-ing"><b>Ingredients:</b> ${r.ings.map(ing=>`${ing.qty}${ing.unit} ${ing.name}`).join(', ')}</div><div class="recipe-stats"><div class="rstat"><div class="rstat-label">Batch cost</div><div class="rstat-val">${fmtD(cost)}</div></div><div class="rstat"><div class="rstat-label">Cost/unit</div><div class="rstat-val">${fmtD(unitCost)}</div></div><div class="rstat"><div class="rstat-label">Gross margin</div><div class="rstat-val ${mc}">${margin.toFixed(1)}%</div></div><div class="rstat"><div class="rstat-label">Profit/unit</div><div class="rstat-val ${mc}">${fmtD(profit)}</div></div></div></div>`;}).join('');
+  // Summary table
+  const sb=el('recipeSummary');if(sb){const sorted=[...recipes].sort((a,b)=>recipeMargin(b)-recipeMargin(a));sb.innerHTML=sorted.map(r=>{const uc=recipeCost(r)/r.batch;const m=recipeMargin(r);const p=r.price-uc;const stars=m>60?'★★★':m>40?'★★':'★';const mc=m>60?'good':m>40?'warn':'danger';return `<tr><td style="font-weight:500;">${r.name}</td><td>${fmtD(uc)}</td><td>$${r.price.toFixed(2)}</td><td><span class="pill ${mc}">${m.toFixed(1)}%</span></td><td style="font-weight:500;color:var(--sage);">${fmtD(p)}</td><td style="color:var(--gold);">${stars}</td></tr>`;}).join('');}
+}
+
+function openRecipeForm(){editingRecipeIdx=-1;rfIngs=[];el('rf-name').value='';el('rf-batch').value=12;el('rf-price').value='';el('recipeFormTitle').innerHTML='<i class="fa-solid fa-book-open"></i> New recipe';el('recipeForm').style.display='block';renderRfIngs();recipeCalc();}
+function editRecipe(i){editingRecipeIdx=i;const r=recipes[i];rfIngs=r.ings.map(ing=>({...ing}));el('rf-name').value=r.name;el('rf-batch').value=r.batch;el('rf-price').value=r.price;el('recipeFormTitle').innerHTML=`<i class="fa-solid fa-pen"></i> Edit recipe — ${r.name}`;el('recipeForm').style.display='block';renderRfIngs();recipeCalc();}
+function delRecipe(i){if(!confirm('Delete this recipe?'))return;recipes.splice(i,1);saveAll();renderRecipes();}
+
+function addRfIng(){
+  rfIngs.push({name:'',qty:0,unit:'kg',cost:0});renderRfIngs();
+}
+function renderRfIngs(){
+  const tb=el('rfIngBody');if(!tb)return;
+  tb.innerHTML=rfIngs.map((ing,i)=>{
+    const ingOpts=ingredients.map(iv=>`<option value="${iv.name}" data-cost="${iv.cost}" data-unit="${iv.unit}">`).join('');
+    return `<tr>
+      <td><input list="rfIngList${i}" value="${ing.name}" onchange="rfIngChange(${i},'name',this.value);autoFillIngCost(${i},this.value)" style="width:130px;padding:4px 6px;border:1px solid var(--border);border-radius:5px;font-size:11px;"><datalist id="rfIngList${i}">${ingOpts}</datalist></td>
+      <td><input type="number" value="${ing.qty}" step="0.01" onchange="rfIngChange(${i},'qty',this.value);recipeCalc()" style="width:65px;padding:4px 6px;border:1px solid var(--border);border-radius:5px;font-size:11px;"></td>
+      <td><input value="${ing.unit}" onchange="rfIngChange(${i},'unit',this.value)" style="width:50px;padding:4px 6px;border:1px solid var(--border);border-radius:5px;font-size:11px;"></td>
+      <td><input type="number" value="${ing.cost}" step="0.01" onchange="rfIngChange(${i},'cost',this.value);recipeCalc()" style="width:65px;padding:4px 6px;border:1px solid var(--border);border-radius:5px;font-size:11px;"></td>
+      <td style="font-weight:500;">${fmtD(ing.qty*ing.cost)}</td>
+      <td><button onclick="rfIngs.splice(${i},1);renderRfIngs();recipeCalc()" style="border:none;background:none;cursor:pointer;color:var(--danger);"><i class="fa-solid fa-times"></i></button></td>
+    </tr>`;
+  }).join('');
+}
+function rfIngChange(i,key,val){rfIngs[i][key]=key==='qty'||key==='cost'?parseFloat(val)||0:val;recipeCalc();}
+function autoFillIngCost(i,name){const found=ingredients.find(iv=>iv.name.toLowerCase()===name.toLowerCase());if(found){rfIngs[i].cost=found.cost;rfIngs[i].unit=found.unit;renderRfIngs();recipeCalc();}}
+function recipeCalc(){
+  const batch=parseFloat(el('rf-batch')?.value)||1;
+  const price=parseFloat(el('rf-price')?.value)||0;
+  const totalCost=rfIngs.reduce((a,i)=>a+i.qty*i.cost,0);
+  const unitCost=totalCost/batch;
+  const margin=price>0?(price-unitCost)/price*100:0;
+  const unitProfit=price-unitCost;
+  if(el('rf-batchCost'))el('rf-batchCost').textContent=fmtD(totalCost);
+  if(el('rf-unitCost'))el('rf-unitCost').textContent=fmtD(unitCost);
+  if(el('rf-margin')){el('rf-margin').textContent=margin.toFixed(1)+'%';el('rf-margin').className='rstat-val '+(margin>60?'good':margin>40?'warn':'danger');}
+  if(el('rf-unitProfit')){el('rf-unitProfit').textContent=fmtD(unitProfit);el('rf-unitProfit').className='rstat-val '+(unitProfit>0?'good':'danger');}
+}
+function saveRecipe(){
+  const name=el('rf-name').value.trim();if(!name)return alert('Enter a recipe name');
+  const batch=parseFloat(el('rf-batch').value)||1;
+  const price=parseFloat(el('rf-price').value)||0;
+  if(!rfIngs.length)return alert('Add at least one ingredient');
+  const recipe={name,batch,price,ings:rfIngs.map(i=>({...i}))};
+  if(editingRecipeIdx>=0)recipes[editingRecipeIdx]=recipe;else recipes.push(recipe);
+  el('recipeForm').style.display='none';saveAll();renderRecipes();
+}
+
+// ══════════════════════════════════════════════
+// DAILY PREP
+// ══════════════════════════════════════════════
+function renderPrep(){
+  const pl=el('prepList');const nm=el('prepNoneMsg');if(!pl)return;
+  if(!recipes.length){pl.innerHTML='';if(nm)nm.style.display='block';return;}
+  if(nm)nm.style.display='none';
+  pl.innerHTML=recipes.map((r,i)=>{
+    const cost=recipeCost(r);const unitCost=cost/r.batch;
+    const qty=prepQtys[i]||0;
+    const batches=Math.ceil(qty/r.batch);
+    const ingCost=batches*cost;
+    return `<div class="prep-row"><span class="prep-name">${r.name}</span><span class="prep-qty"><input type="number" value="${qty}" min="0" placeholder="0" oninput="prepQtys[${i}]=parseInt(this.value)||0;calcPrep()" style="width:65px;padding:5px 7px;border:1px solid var(--border);border-radius:6px;font-size:12px;text-align:center;"></span><span class="prep-need" style="font-size:10px;color:var(--dust);">${qty>0?batches+' batch'+( batches>1?'es':'')+' · '+fmtD(ingCost):''}</span><span class="prep-cost">${qty>0?'$'+(unitCost*qty).toFixed(2):''}</span></div>`;
+  }).join('');
+  calcPrep();
+}
+function clearPrep(){Object.keys(prepQtys).forEach(k=>delete prepQtys[k]);renderPrep();}
+function calcPrep(){
+  let totalIngCost=0,totalUnits=0,totalRev=0;
+  const neededMap={};
+  recipes.forEach((r,i)=>{
+    const qty=prepQtys[i]||0;if(!qty)return;
+    const batches=Math.ceil(qty/r.batch);
+    const cost=recipeCost(r)*batches;
+    totalIngCost+=cost;totalUnits+=qty;totalRev+=qty*r.price;
+    r.ings.forEach(ing=>{
+      if(!neededMap[ing.name])neededMap[ing.name]={unit:ing.unit,needed:0};
+      neededMap[ing.name].needed+=ing.qty*batches;
+    });
+  });
+  if(el('prep-ingCost'))el('prep-ingCost').textContent=fmtD(totalIngCost);
+  if(el('prep-units'))el('prep-units').textContent=totalUnits;
+  if(el('prep-rev'))el('prep-rev').textContent=fmtD(totalRev);
+  if(el('prep-profit'))el('prep-profit').textContent=fmtD(totalRev-totalIngCost);
+  // Ingredient needs
+  const pn=el('prepIngNeeded');
+  if(pn){const entries=Object.entries(neededMap);pn.innerHTML=entries.length?entries.map(([name,d])=>`<div class="dr" style="padding:5px 0;"><span class="dr-l">${name}</span><span class="dr-v">${d.needed.toFixed(2)} ${d.unit}</span></div>`).join(''):'<div style="font-size:11px;color:var(--dust);">Enter quantities above to see ingredient needs.</div>';}
+  // Stock warnings
+  const pw=el('prepStockWarnings');
+  if(pw){const warns=Object.entries(neededMap).filter(([name,d])=>{const inv=ingredients.find(i=>i.name===name);return inv&&inv.qty<d.needed;});pw.innerHTML=warns.length?warns.map(([name,d])=>{const inv=ingredients.find(i=>i.name===name);const shortage=d.needed-inv.qty;return `<div class="alert-item warn"><i class="fa-solid fa-triangle-exclamation"></i><div><div class="alert-msg">${name} — need ${d.needed.toFixed(2)} ${d.unit}, only ${inv.qty} on hand</div><div class="alert-sub">Short by ${shortage.toFixed(2)} ${d.unit}</div></div></div>`;}).join(''):'<div style="font-size:11px;color:var(--sage);padding:6px 0;"><i class="fa-solid fa-check"></i> Sufficient stock for today\'s prep</div>';}
+}
+function runPrep(){
+  if(!Object.values(prepQtys).some(v=>v>0))return alert('Enter quantities to make first');
+  if(!confirm('Deduct today\'s prep ingredients from stock?'))return;
+  recipes.forEach((r,i)=>{
+    const qty=prepQtys[i]||0;if(!qty)return;
+    const batches=Math.ceil(qty/r.batch);
+    r.ings.forEach(ing=>{
+      const inv=ingredients.find(iv=>iv.name===ing.name);
+      if(inv)inv.qty=Math.max(0,inv.qty-ing.qty*batches);
+    });
+  });
+  saveAll();renderInventory();renderStockAlerts();renderPrep();
+  alert('Stock deducted! Check Inventory for updated levels.');
+}
+
+// ══════════════════════════════════════════════
+// WASTE TRACKER
+// ══════════════════════════════════════════════
+function logWaste(){
+  const item=el('w-item').value.trim();const qty=parseFloat(el('w-qty').value)||0;const cost=parseFloat(el('w-cost').value)||0;
+  if(!item||!qty)return alert('Enter item and quantity');
+  wasteLog.push({item,qty,cost:qty*cost,unitCost:cost,date:new Date().toISOString()});
+  el('w-item').value='';el('w-qty').value='';el('w-cost').value='';
+  saveAll();renderWaste();recalc();
+}
+function removeWaste(i){wasteLog.splice(i,1);saveAll();renderWaste();recalc();}
+function getTopWasteItem(){
+  const map={};wasteLog.forEach(w=>{map[w.item]=(map[w.item]||0)+w.cost;});
+  const sorted=Object.entries(map).sort((a,b)=>b[1]-a[1]);return sorted.length?sorted[0][0]:null;
+}
+function renderWaste(){
+  const todayStr=today.toDateString();
+  const todayLog=wasteLog.filter(w=>new Date(w.date).toDateString()===todayStr);
+  const wl=el('wasteLog');
+  if(wl){wl.innerHTML=todayLog.length?todayLog.map((w,i)=>{const globalIdx=wasteLog.indexOf(w);return `<div class="waste-row"><span class="waste-item">${w.item}</span><span class="waste-qty">${w.qty} units @ ${fmtD(w.unitCost)}</span><span class="waste-cost">${fmtD(w.cost)}</span><button onclick="removeWaste(${globalIdx})" style="border:none;background:none;cursor:pointer;color:var(--dust);font-size:10px;"><i class="fa-solid fa-times"></i></button></div>`;}).join(''):'<div style="font-size:11px;color:var(--dust);padding:6px 0;"><i class="fa-solid fa-check" style="color:var(--sage);"></i> No waste logged today</div>';}
+  // Tips
+  const tips=el('wasteTips');if(tips){const topItem=getTopWasteItem();const lines=[];if(topItem)lines.push(`<b>${topItem}</b> is your most wasted item — consider reducing batch size or running a daily special to sell through.`);lines.push('Track end-of-day counts consistently to spot patterns over 2–3 weeks.');lines.push('Reducing waste by 2% on $4,000 daily revenue saves ~$80/day ($29,000/year).');tips.innerHTML=lines.map(l=>`<div style="margin-bottom:6px;">💡 ${l}</div>`).join('');}
+  updateWasteCharts();
+}
+
+// ══════════════════════════════════════════════
+// CHARTS
+// ══════════════════════════════════════════════
+let charts={};
+function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+function updateCharts(){
+  // Weekly revenue
+  if(charts.week){charts.week.data.datasets[0].data=[...wkBustl.slice(0,6),D.bsales];charts.week.data.datasets[1].data=[...wkShopify.slice(0,6),D.ssales];charts.week.update();}
+  // Cost doughnut
+  const rev=D.bsales+D.ssales-D.sref;const wc=wasteLog.filter(w=>new Date(w.date).toDateString()===today.toDateString()).reduce((a,w)=>a+w.cost,0);
+  if(charts.cost){charts.cost.data.datasets[0].data=[Math.max(0,D.lab),Math.max(0,D.cogs),Math.max(0,D.exp),Math.max(0,wc),Math.max(0,rev-D.lab-D.cogs-D.exp-wc)];charts.cost.update();}
+  // Labour trend
+  const labP=rev>0?D.lab/rev*100:28;
+  if(charts.labTrend){charts.labTrend.data.datasets[0].data=[24,27,31,28,26,29,labP];charts.labTrend.data.datasets[1].data=Array(7).fill(D.thrLab||30);charts.labTrend.update();}
+  // GST
+  const dEl=today.getDate();const gstDay=(rev/11)/dEl;
+  if(charts.gst){charts.gst.data.datasets[0].data=Array.from({length:dEl},(_,i)=>Math.round((i+1)*gstDay));charts.gst.update();}
+  // Purchases
+  if(charts.pur){charts.pur.data.datasets[0].data=[...wkPurch.slice(0,6),suppliers.reduce((a,b)=>a+b.amount,0)];charts.pur.update();}
+}
+function updateWasteCharts(){
+  const map={};wasteLog.forEach(w=>{map[w.item]=(map[w.item]||0)+w.cost;});
+  const sorted=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  if(charts.waste){charts.waste.data.labels=sorted.map(e=>e[0]);charts.waste.data.datasets[0].data=sorted.map(e=>parseFloat(e[1].toFixed(2)));charts.waste.update();}
+  // Weekly waste
+  if(charts.wasteWeek){const wdMap={};wasteLog.forEach(w=>{const d=new Date(w.date).toLocaleDateString('en-NZ',{weekday:'short'});wdMap[d]=(wdMap[d]||0)+w.cost;});const wdDays=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];charts.wasteWeek.data.datasets[0].data=wdDays.map(d=>parseFloat((wdMap[d]||0).toFixed(2)));charts.wasteWeek.update();}
+}
+
+function initCharts(){
+  const c=id=>{const e=el(id);return e?e.getContext('2d'):null;};
+  if(c('weekChart'))charts.week=new Chart(c('weekChart'),{type:'bar',data:{labels:days,datasets:[{label:'Bustl',data:wkBustl,backgroundColor:'#B85C38',borderWidth:0,borderRadius:3},{label:'Shopify',data:wkShopify,backgroundColor:'#4A6741',borderWidth:0,borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:10},color:'#8A7E74'}},y:{stacked:true,grid:{color:'rgba(28,18,8,0.06)'},ticks:{font:{size:10},color:'#8A7E74',callback:v=>'$'+v.toLocaleString()}}}}});
+  const rev=D.bsales+D.ssales-D.sref;const wc=wasteLog.filter(w=>new Date(w.date).toDateString()===today.toDateString()).reduce((a,w)=>a+w.cost,0);
+  if(c('costChart'))charts.cost=new Chart(c('costChart'),{type:'doughnut',data:{labels:['Labour','Food cost','Expenses','Waste','Profit'],datasets:[{data:[D.lab,D.cogs,D.exp,wc,Math.max(0,rev-D.lab-D.cogs-D.exp-wc)],backgroundColor:['#C9933A','#B85C38','#8A7E74','#A32D2D','#4A6741'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false}}}});
+  if(c('labTrendChart'))charts.labTrend=new Chart(c('labTrendChart'),{type:'line',data:{labels:days,datasets:[{label:'Labour %',data:[24,27,31,28,26,29,rev>0?D.lab/rev*100:28],borderColor:'#B85C38',backgroundColor:'rgba(184,92,56,0.08)',borderWidth:2,fill:true,tension:0.4,pointRadius:3},{label:'Target',data:Array(7).fill(D.thrLab||30),borderColor:'#4A6741',borderWidth:1,borderDash:[4,4],pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#8A7E74'}},y:{grid:{color:'rgba(28,18,8,0.06)'},ticks:{font:{size:10},color:'#8A7E74',callback:v=>v+'%'}}}}});
+  const dEl=today.getDate();const gstDay=(rev/11)/Math.max(1,dEl);
+  if(c('gstChart'))charts.gst=new Chart(c('gstChart'),{type:'line',data:{labels:Array.from({length:dEl},(_,i)=>i+1),datasets:[{label:'GST',data:Array.from({length:dEl},(_,i)=>Math.round((i+1)*gstDay)),borderColor:'#2b4bdb',backgroundColor:'rgba(43,75,219,0.06)',borderWidth:2,fill:true,tension:0.3,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#8A7E74'}},y:{grid:{color:'rgba(28,18,8,0.06)'},ticks:{font:{size:10},color:'#8A7E74',callback:v=>'$'+v.toLocaleString()}}}}});
+  if(c('purChart'))charts.pur=new Chart(c('purChart'),{type:'bar',data:{labels:days,datasets:[{label:'Supplier spend',data:wkPurch,backgroundColor:'#7F77DD',borderWidth:0,borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#8A7E74'}},y:{grid:{color:'rgba(28,18,8,0.06)'},ticks:{font:{size:10},color:'#8A7E74',callback:v=>'$'+v.toLocaleString()}}}}});
+  // Waste charts
+  const wdDays=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  if(c('wasteChart'))charts.waste=new Chart(c('wasteChart'),{type:'bar',data:{labels:[],datasets:[{label:'Waste cost',data:[],backgroundColor:'#C0392B',borderWidth:0,borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#8A7E74'}},y:{grid:{color:'rgba(28,18,8,0.06)'},ticks:{font:{size:10},color:'#8A7E74',callback:v=>'$'+v}}}}});
+  if(c('wasteWeekChart'))charts.wasteWeek=new Chart(c('wasteWeekChart'),{type:'line',data:{labels:wdDays,datasets:[{label:'Waste',data:Array(7).fill(0),borderColor:'#C0392B',backgroundColor:'rgba(192,57,43,0.08)',borderWidth:2,fill:true,tension:0.4,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#8A7E74'}},y:{grid:{color:'rgba(28,18,8,0.06)'},ticks:{font:{size:10},color:'#8A7E74',callback:v=>'$'+v}}}}});
+  updateWasteCharts();
+}
+
+// ══════════════════════════════════════════════
+// SAVE
+// ══════════════════════════════════════════════
+function saveAll(){
+  readInputs();
+  localStorage.setItem('pm_d',JSON.stringify(D));
+  localStorage.setItem('pm_sup',JSON.stringify(suppliers));
+  localStorage.setItem('pm_stf',JSON.stringify(staffData));
+  localStorage.setItem('pm_inv',JSON.stringify(ingredients));
+  localStorage.setItem('pm_bil',JSON.stringify(bills));
+  localStorage.setItem('pm_rec',JSON.stringify(recipes));
+  localStorage.setItem('pm_waste',JSON.stringify(wasteLog));
+  const dot=el('syncDot');if(dot){dot.style.background='var(--sage)';setTimeout(()=>dot.style.background='var(--gold)',1500);}
+}
+
+// ══════════════════════════════════════════════
+// LIVE BACKEND SYNC
+// ══════════════════════════════════════════════
+const BACKEND = 'https://piccolo-morso-backend.onrender.com';
+const SECRET = 'piccolomorso2026';
+let lastSyncTime = null;
+
+async function fetchLiveData() {
+  const dot = el('syncDot');
+  const syncSpan = document.querySelector('.sync-status span');
+  try {
+    if(dot) dot.style.background = '#C9933A';
+    const res = await fetch(`${BACKEND}/data?key=${SECRET}`);
+    if(!res.ok) throw new Error('Server error');
+    const live = await res.json();
+    lastSyncTime = new Date();
+
+    // Only update from backend if it has real data (not zeros)
+    let updated = false;
+
+    if(live.bustl && live.bustl.updatedAt) {
+      D.bsales = live.bustl.sales || D.bsales;
+      D.bord = live.bustl.orders || D.bord;
+      D.baov = live.bustl.aov || D.baov;
+      D.blw = live.bustl.lastWeek || D.blw;
+      updated = true;
+    }
+    if(live.shopify && live.shopify.updatedAt) {
+      D.ssales = live.shopify.sales || D.ssales;
+      D.sord = live.shopify.orders || D.sord;
+      D.sref = live.shopify.refunds || D.sref;
+      updated = true;
+    }
+    if(live.xero && live.xero.updatedAt) {
+      D.bank = live.xero.bank || D.bank;
+      D.exp = live.xero.expenses || D.exp;
+      // Merge Xero invoices into bills
+      if(live.xero.invoices && live.xero.invoices.length > 0) {
+        live.xero.invoices.forEach(inv => {
+          const exists = bills.find(b => b.desc === inv.desc && b.amount === inv.amount);
+          if(!exists) bills.push({desc: inv.desc, amount: inv.amount, due: inv.due, source: 'Xero'});
+        });
+        localStorage.setItem('pm_bil', JSON.stringify(bills));
+      }
+      updated = true;
+    }
+    if(live.ipayroll && live.ipayroll.updatedAt) {
+      D.lab = live.ipayroll.labour || D.lab;
+      D.pwages = live.ipayroll.periodWages || D.pwages;
+      D.pdays = live.ipayroll.periodDays || D.pdays;
+      D.pelap = live.ipayroll.periodElapsed || D.pelap;
+      updated = true;
+    }
+
+    if(updated) {
+      populateInputs();
+      recalc();
+      localStorage.setItem('pm_d', JSON.stringify(D));
+    }
+
+    if(dot) dot.style.background = '#4A6741';
+    if(syncSpan) syncSpan.textContent = 'Live — synced ' + lastSyncTime.toLocaleTimeString('en-NZ',{hour:'2-digit',minute:'2-digit'});
+    setTimeout(()=>{ if(dot) dot.style.background='var(--gold)'; }, 2000);
+
+  } catch(err) {
+    console.log('Backend sync error:', err.message);
+    if(dot) dot.style.background = '#C0392B';
+    if(syncSpan) syncSpan.textContent = 'Backend offline — using saved data';
+    setTimeout(()=>{ if(dot) dot.style.background='var(--gold)'; }, 3000);
+  }
+}
+
+// Add sync button to topbar
+const syncBtn = document.createElement('button');
+syncBtn.className = 'btn btn-ghost btn-sm';
+syncBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> Sync now';
+syncBtn.onclick = fetchLiveData;
+document.querySelector('.topbar-actions').prepend(syncBtn);
+
+// Add live indicator to sidebar
+const liveTag = document.createElement('div');
+liveTag.style.cssText = 'font-size:9px;color:#4A6741;background:rgba(74,103,65,0.15);padding:2px 7px;border-radius:8px;margin-top:6px;display:inline-block;';
+liveTag.innerHTML = '⚡ LIVE BACKEND CONNECTED';
+document.querySelector('.sidebar-bottom').appendChild(liveTag);
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+populateInputs();
+recalc();
+renderInventory();
+renderStaff();
+setTimeout(initCharts, 250);
+// Fetch live data on load, then every 5 minutes
+setTimeout(fetchLiveData, 1000);
+setInterval(fetchLiveData, 5 * 60 * 1000);
+</script>
+</body>
+</html>
